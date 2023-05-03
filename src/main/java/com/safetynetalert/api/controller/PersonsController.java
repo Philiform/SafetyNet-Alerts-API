@@ -3,9 +3,12 @@ package com.safetynetalert.api.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.safetynetalert.api.exception.InvalidDataException;
+import com.safetynetalert.api.logMessage.Const;
+import com.safetynetalert.api.logMessage.LogMessage;
 import com.safetynetalert.api.model.Person;
 import com.safetynetalert.api.service.PersonsService;
 import com.safetynetalert.api.service.dto.ChildAlertDTO;
@@ -27,9 +33,14 @@ import jakarta.validation.Valid;
 @RestController
 public class PersonsController {
 
+	private static final Logger log = LoggerFactory.getLogger(PersonsController.class);
+
 	@Autowired
 	private PersonsService service;
 
+	private String classe = Const.CLASSE_CONTROLLER + Const.CLASSE_PERSON;
+	private String endpoint = "";
+	private String method = "";
 	private HttpStatus httpStatus;
 
 	/**
@@ -42,7 +53,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/firestation")
 	public ResponseEntity<FirestationDTO> getListPersonsByStation(@RequestParam(value = "stationNumber") final String station_number) {
+		endpoint = "/firestation";
+		method = "getListPersonsByStation";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		FirestationDTO firestation = service.getListPersonsByStation(station_number);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(firestation.getPersons().size() > 0) {
 			httpStatus = HttpStatus.OK;
@@ -62,7 +79,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/childAlert")
 	public ResponseEntity<List<ChildAlertDTO>> getListChildByAdress(@RequestParam(value = "address") final String address) {
+		endpoint = "/childAlert";
+		method = "getListChildByAdress";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		List<ChildAlertDTO> childAlert = service.getListChildByAdress(address);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(childAlert.size() > 0) {
 			httpStatus = HttpStatus.OK;
@@ -83,7 +106,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/fire")
 	public ResponseEntity<FireDTO> getListPersonsByAdressFire(@RequestParam(value = "address") final String address) {
+		endpoint = "/fire";
+		method = "getListPersonsByAdressFire";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		FireDTO fire = service.getListPersonsByAdressFire(address);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(!fire.getPersons().isEmpty()) {
 			httpStatus = HttpStatus.OK;
@@ -105,7 +134,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/flood/stations")
 	public ResponseEntity<List<FloodDTO>> getListPersonsByStationNumbersFlood(@RequestParam(value = "stations") final List<String> stationNumbers) {
+		endpoint = "/flood/stations";
+		method = "getListPersonsByStationNumbersFlood";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		List<FloodDTO> flood = service.getListPersonsByStationsNumbersFlood(stationNumbers);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(flood.size() > 0) {
 			httpStatus = HttpStatus.OK;
@@ -127,7 +162,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/personInfo")
 	public ResponseEntity<List<PersonInfoDTO>> getPersonInfoByFirstNameAndLastName(@RequestParam(value = "firstName") final String firstName, @RequestParam(value = "lastName") final String lastName) {
+		endpoint = "/personInfo";
+		method = "getPersonInfoByFirstNameAndLastName";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		List<PersonInfoDTO> personInfo = service.getPersonInfoByFirstNameAndLastName(firstName, lastName);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(personInfo.size() > 0) {
 			httpStatus = HttpStatus.OK;
@@ -146,8 +187,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/person")
 	public ResponseEntity<Optional<Person>> getPersonByFirstNameAndLastName(@RequestParam(value = "firstName") final String firstName, @RequestParam(value = "lastName") final String lastName) {
-		System.out.println("****");
+		endpoint = "/person";
+		method = "getPersonByFirstNameAndLastName";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		Optional<Person> person = service.getPerson(firstName, lastName);
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(!person.isEmpty()) {
 			httpStatus = HttpStatus.OK;
@@ -164,7 +210,13 @@ public class PersonsController {
 	 */
 	@GetMapping("/persons")
 	public ResponseEntity<List<Person>> getAllPersons() {
+		endpoint = "/persons";
+		method = "getAllPersons";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
 		List<Person> persons = service.getAllPersons();
+
+		log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
 
 		if(persons.size() > 0) {
 			httpStatus = HttpStatus.OK;
@@ -181,19 +233,34 @@ public class PersonsController {
 	 * @return Un objet Person enregistré
 	 */
 	@PostMapping("/person")
-	public ResponseEntity<?> createPerson(@RequestBody @Valid final Person person) {
+	public ResponseEntity<?> createPerson(@RequestBody @Valid final Person person, BindingResult bindingResult) {
+		endpoint = "/person";
+		method = "createPerson";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
+		if (bindingResult.hasErrors()) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+			throw new InvalidDataException(bindingResult);
+		}
+
 		try {
 			Optional<Person> p = service.savePerson(person);
 
 			if(!p.isEmpty()) {
+				log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
+
 				httpStatus = HttpStatus.CREATED;
 			} else {
+				log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 				httpStatus = HttpStatus.BAD_REQUEST;
 				p = Optional.of(new Person());
 			}
 
 			return new ResponseEntity<Person>(p.get(), httpStatus);
 		} catch (Exception e) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 			return new ResponseEntity<String>("Error when creating the person's information in the database.\n" + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -205,19 +272,34 @@ public class PersonsController {
 	 * @return Un objet Person modifié
 	 */
 	@PutMapping("/person")
-	public ResponseEntity<?> updatePerson(@RequestBody @Valid final Person person) {
+	public ResponseEntity<?> updatePerson(@RequestBody @Valid final Person person, BindingResult bindingResult) {
+		endpoint = "/person";
+		method = "updatePerson";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
+		if (bindingResult.hasErrors()) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+			throw new InvalidDataException(bindingResult);
+		}
+
 		try {
 			Optional<Person> p = service.updatePerson(person);
 
 			if(!p.isEmpty()) {
+				log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
+
 				httpStatus = HttpStatus.OK;
 			} else {
+				log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 				httpStatus = HttpStatus.BAD_REQUEST;
 				p = Optional.of(new Person());
 			}
 
 			return new ResponseEntity<Person>(p.get(), httpStatus);
 		} catch (Exception e) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 			return new ResponseEntity<String>("Error when updating the person's information in the database.\n" + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -228,16 +310,31 @@ public class PersonsController {
 	 * @param person Un objet Person
 	 */
 	@DeleteMapping("/person")
-	public ResponseEntity<String> deletePerson(@RequestBody @Valid final Person person) {
+	public ResponseEntity<String> deletePerson(@RequestBody @Valid final Person person, BindingResult bindingResult) {
+		endpoint = "/person";
+		method = "deletePerson";
+		log.info(LogMessage.getMessage(classe, Const.REQUETE, endpoint, method));
+
+		if (bindingResult.hasErrors()) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+			throw new InvalidDataException(bindingResult);
+		}
+
 		try {
 			boolean deleted = service.deletePerson(person);
 
 			if(deleted) {
+				log.info(LogMessage.getMessage(classe, Const.RESPONSE_OK, endpoint, method));
+
 				return new ResponseEntity<String>("The person's information is not deleted from the database.", HttpStatus.ACCEPTED);
 			} else {
+				log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 				return new ResponseEntity<String>("The person's information is not deleted from the database.", HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
+			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
+
 			return new ResponseEntity<String>("Error when deleting the person's information from the database.\n" + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}

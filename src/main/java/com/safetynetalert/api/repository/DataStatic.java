@@ -7,14 +7,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
 import com.jsoniter.JsonIterator;
+import com.safetynetalert.api.logMessage.LogMessage;
 import com.safetynetalert.api.model.Datas;
 
 @Repository
 public class DataStatic {
+
+	private static final Logger log = LoggerFactory.getLogger(DataStatic.class);
 
 	private static Datas originalDatas = new Datas();
 	private static Datas datas = new Datas();
@@ -36,8 +41,10 @@ public class DataStatic {
 				resetDatas();
 
 			} catch (FileNotFoundException e) {
+				log.error(LogMessage.getMessage("file '" + filepath + "' not found"));
 				setNullDatas();
 			} catch (IOException e) {
+				log.error(LogMessage.getMessage("IOException"));
 				setNullDatas();
 			}
 		} else {

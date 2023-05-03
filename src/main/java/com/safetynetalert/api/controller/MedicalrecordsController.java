@@ -20,13 +20,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.safetynetalert.api.exception.DateFutureException;
 import com.safetynetalert.api.exception.InvalidDataException;
-import com.safetynetalert.api.logMessage.Const;
-import com.safetynetalert.api.logMessage.LogMessage;
 import com.safetynetalert.api.model.Medicalrecord;
 import com.safetynetalert.api.service.MedicalrecordsService;
+import com.safetynetalert.api.logMessage.Const;
+import com.safetynetalert.api.logMessage.LogMessage;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name =  "API for CRUD operations on people's medical data.")
 @RestController
 public class MedicalrecordsController {
 
@@ -47,6 +56,13 @@ public class MedicalrecordsController {
 	 * @param lastName The last name of the medicalrecord
 	 * @return A list of the medicalrecord
 	 */
+	@Operation(summary = "?firstName=<firstName>&lastName=<lastName>")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Gives the person's medical data.",
+			content = { @Content(mediaType = "application/json",
+				schema = @Schema(implementation = Medicalrecord.class)) }),
+		@ApiResponse(responseCode = "204", description = "The list is empty.",
+			content = @Content) })
 	@GetMapping("/medicalRecord")
 	public ResponseEntity<Optional<Medicalrecord>> getMedicalrecordsByFistNameAndLastName(@RequestParam(value = "firstName") final String firstName, @RequestParam(value = "lastName") final String lastName) {
 		endpoint = "/medicalRecord";
@@ -70,6 +86,12 @@ public class MedicalrecordsController {
 	 *
 	 * @return A list of all Medicalrecord
 	 */
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Gives the medical data of all persons.",
+			content = { @Content(mediaType = "application/json",
+				array = @ArraySchema(schema = @Schema(implementation = Medicalrecord.class))) }),
+		@ApiResponse(responseCode = "204", description = "The list is empty.",
+			content = @Content) })
 	@GetMapping("/medicalRecords")
 	public ResponseEntity<List<Medicalrecord>> getAllMedicalrecords() {
 		endpoint = "/medicalRecords";
@@ -95,6 +117,18 @@ public class MedicalrecordsController {
 	 * @return The medicalrecord object saved
 	 * @throws DateFutureException
 	 */
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "201", description = "Create the person's medical data.",
+			content = { @Content(mediaType = "application/json",
+				schema = @Schema(implementation = Medicalrecord.class)) }),
+		@ApiResponse(responseCode = "400", description = "Bad Request",
+			content = { @Content(
+				schema = @Schema(implementation = String.class),
+				examples = {@ExampleObject("Birthdate 14/23/2020 is not valide (valide date: mm/dd/yyyy)\nOR\n" +
+					"Birthdate 12/23/3020 is not valide (must be today or in the past)\nOR\n" +
+					"The medical data is not created in the database.\nOR\n" +
+					"Error when creating the person's medical data in the database.\n" +
+					"It already exists.")} )}) })
 	@PostMapping(value = "/medicalRecord")
 	public ResponseEntity<?> createMedicalrecord(@RequestBody @Valid final Medicalrecord medicalrecord, BindingResult bindingResult) throws DateFutureException {
 		endpoint = "/medicalRecord";
@@ -148,6 +182,18 @@ public class MedicalrecordsController {
 	 * @return The medicalrecord object modified
 	 * @throws DateFutureException
 	 */
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Update a person's medical data.",
+			content = { @Content(mediaType = "application/json",
+				schema = @Schema(implementation = Medicalrecord.class)) }),
+		@ApiResponse(responseCode = "400", description = "Bad Request",
+			content = { @Content(
+				schema = @Schema(implementation = String.class),
+				examples = {@ExampleObject("Birthdate 14/23/2020 is not valide (valide date: mm/dd/yyyy)\nOR\n" +
+					"Birthdate 12/23/3020 is not valide (must be today or in the past)\nOR\n" +
+					"The medical data is not updated in the database.\nOR\n" +
+					"Error when updating the person's medical data in the database.\n" +
+					"It does not exist.")} )}) })
 	@PutMapping("/medicalRecord")
 	public ResponseEntity<?> updateMedicalrecord(@RequestBody @Valid final Medicalrecord medicalrecord, BindingResult bindingResult) throws DateFutureException {
 		endpoint = "/medicalRecord";
@@ -199,6 +245,17 @@ public class MedicalrecordsController {
 	 *
 	 * @param medicalrecord An object medicalrecord
 	 */
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "202", description = "Delete a person's medical data.",
+			content = { @Content(
+				schema = @Schema(implementation = String.class),
+				examples = {@ExampleObject("The medical data is deleted from the database.")} )}),
+		@ApiResponse(responseCode = "400", description = "Bad Request",
+			content = { @Content(
+				schema = @Schema(implementation = String.class),
+				examples = {@ExampleObject("The medical data is not deleted from the database.\nOR\n" +
+					"Error when deleting the person's medical data from the database.\n" +
+					"It does not exist.")} )}) })
 	@DeleteMapping("/medicalRecord")
 	public ResponseEntity<String> deleteMedicalrecord(@RequestBody @Valid final Medicalrecord medicalrecord, BindingResult bindingResult) {
 		endpoint = "/medicalRecord";
@@ -220,7 +277,7 @@ public class MedicalrecordsController {
 			} else {
 				log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));
 
-				return new ResponseEntity<String>("The medical data is deleted from the database.", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<String>("The medical data is not deleted from the database.", HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
 			log.error(LogMessage.getMessage(classe, Const.RESPONSE_ERREUR, endpoint, method));

@@ -11,11 +11,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.safetynetalert.api.logMessage.Const;
-import com.safetynetalert.api.logMessage.LogMessage;
 import com.safetynetalert.api.repository.DataStatic;
 import com.safetynetalert.api.service.AddressesService;
+import com.safetynetalert.api.logMessage.Const;
+import com.safetynetalert.api.logMessage.LogMessage;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name =  "API for CRUD operations on phones and emails.")
 @RestController
 public class AddressesController {
 
@@ -34,6 +44,15 @@ public class AddressesController {
 	 * @param firestation_number
 	 * @return a list of phone numbers sorted alphabetically
 	 */
+	@Operation(summary = "?firestation=<firestationNumber>")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Gives the list of telephone numbers.",
+			content = { @Content(
+				mediaType = "application/json",
+				array = @ArraySchema(schema = @Schema(implementation = String.class)),
+				examples = {@ExampleObject("[\n\t\"841-874-6512\",\n\t\"841-874-7462\"]")} )}),
+		@ApiResponse(responseCode = "204", description = "The list is empty.",
+			content = @Content) })
     @GetMapping("/phoneAlert")
 	public ResponseEntity<Set<String>> getPhonesByFirestationNumber(@RequestParam(value = "firestation") final String firestationNumber) {
 		endpoint = "/phoneAlert";
@@ -57,6 +76,14 @@ public class AddressesController {
 	 * @param city
 	 * @return a list of emails sorted in alphabetical order
 	 */
+	@Operation(summary = "?city=<city>")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Gives the list of emails of a city.",
+			content = { @Content(mediaType = "application/json",
+			array = @ArraySchema(schema = @Schema(implementation = String.class)),
+			examples = {@ExampleObject("[\n\t\"java@email.com\",\n\t\"test@email.com\"]")} )}),
+		@ApiResponse(responseCode = "204", description = "The list is empty.",
+			content = @Content) })
 	@GetMapping("/communityEmail")
 	public ResponseEntity<Set<String>> getEmailsByCity(@RequestParam(value = "city") final String city) {
 		endpoint = "/communityEmail";

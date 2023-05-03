@@ -8,7 +8,7 @@ import com.safetynetalert.api.repository.DataStatic;
 @SpringBootApplication
 public class SafetyNetAlertsApplication {
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
 		DataStatic.loadData("data.json");
 
